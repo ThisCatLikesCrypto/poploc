@@ -1,76 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CDN POP Locator</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2em;
-      background: #f9f9f9;
-    }
-    h1 {
-      font-size: 1.5em;
-    }
-    .cdn {
-      margin: 1em 0;
-      padding: 1em;
-      background: white;
-      border-left: 4px solid #ccc;
-    }
-    .cdn span {
-      display: block;
-      margin-top: 0.5em;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDN POP Locator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2em;
+            background: #f9f9f9;
+        }
+        h1 {
+            font-size: 1.5em;
+        }
+        .cdn {
+            margin: 1em 0;
+            padding: 1em;
+            background: white;
+            border-left: 4px solid #ccc;
+        }
+        .cdn span {
+            display: block;
+            margin-top: 0.5em;
+        }
+    </style>
 </head>
 <body>
-  <h1>CDN POP Locations</h1>
-  <div id="results"></div>
+    <h1>CDN POP Locations</h1>
+    <div id="results"></div>
 
-  <script>
-    const cdns = [
-      {
-        name: "Amazon CloudFront",
-        url: "https://assets.c48.uk",
-        header: "x-amz-cf-pop",
-        id: "acf"
-      },
-      {
-        name: "Cloudflare",
-        url: "https://r2.wilburwilliams.com",
-        header: "cf-ray",
-        id: "cf"
-      }
-    ];
+    <script>
+        const cdns = [
+            {
+                name: "Amazon CloudFront",
+                url: "https://assets.c48.uk",
+                header: "x-amz-cf-pop",
+                id: "acf"
+            },
+            {
+                name: "Cloudflare",
+                url: "https://r2.wilburwilliams.com",
+                header: "cf-ray",
+                id: "cf"
+            },
+            {
+                name: "Fastly",
+                url: "https://fastly.c48.uk",
+                header: "x-served-by",
+                id: "fs"
+            }
+        ];
 
-    const resultsContainer = document.getElementById("results");
+        const resultsContainer = document.getElementById("results");
 
-    cdns.forEach(cdn => {
-      fetch(cdn.url, {
-        method: "HEAD"
-      })
-      .then(response => {
-        const popInfo = response.headers.get(cdn.header);
-        console.log(response);
-        if (cdn.id === "acf") {
-          displayResult(cdn.name, cdn.url, cdn.header, popInfo, popInfo.slice(0, 3));
-        } else if (cdn.id === "cf") {
-          displayResult(cdn.name, cdn.url, cdn.header, popInfo, popInfo.slice(-3));
+        cdns.forEach(cdn => {
+            fetch(cdn.url, {
+                method: "HEAD"
+            })
+            .then(response => {
+                const popInfo = response.headers.get(cdn.header);
+                console.log(response);
+                if (cdn.id === "acf") {
+                    displayResult(cdn.name, cdn.url, cdn.header, popInfo, popInfo.slice(0, 3));
+                } else if (cdn.id === "cf" || cdn.id === "fs") {
+                    displayResult(cdn.name, cdn.url, cdn.header, popInfo, popInfo.slice(-3));
+                }
+            })
+            .catch(err => {
+                displayResult(cdn.name, cdn.url, cdn.header, `Error: ${err.message}`, "");
+            });
+        });
+
+        function displayResult(name, url, header, value, loc) {
+            const div = document.createElement("div");
+            div.className = "cdn";
+            div.innerHTML = `<strong>${name}</strong><span>URL: ${url}</span><span>Header: ${header}</span><span>Value: ${value}</span><span>Location: ${loc}</span>`;
+            resultsContainer.appendChild(div);
         }
-      })
-      .catch(err => {
-        displayResult(cdn.name, cdn.url, cdn.header, `Error: ${err.message}`, "");
-      });
-    });
-
-    function displayResult(name, url, header, value, loc) {
-      const div = document.createElement("div");
-      div.className = "cdn";
-      div.innerHTML = `<strong>${name}</strong><span>URL: ${url}</span><span>Header: ${header}</span><span>Value: ${value}</span><span>Location: ${loc}</span>`;
-      resultsContainer.appendChild(div);
-    }
-  </script>
+    </script>
 </body>
 </html>
